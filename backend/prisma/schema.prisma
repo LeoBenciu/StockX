@@ -1,0 +1,209 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices Invoice[]
+  receipts Receipt[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model Invoice {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName      String
+  fileUrl       String
+  fileKey       String?  // S3 key
+  supplierName  String?
+  invoiceDate   DateTime?
+  totalAmount   Float?
+  status        InvoiceStatus @default(PENDING)
+  processedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items         InvoiceItem[]
+
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  itemName    String
+  quantity    Float
+  unit        String   // kg, g, l, ml, pcs, etc.
+  unitPrice   Float?
+  totalPrice  Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inventoryUpdates InventoryUpdate[]
+
+  @@map("invoice_items")
+}
+
+model Receipt {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName    String
+  fileUrl     String
+  fileKey     String?  // S3 key
+  receiptDate DateTime?
+  totalAmount Float?
+  status      ReceiptStatus @default(PENDING)
+  processedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       ReceiptItem[]
+
+  @@map("receipts")
+}
+
+enum ReceiptStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model ReceiptItem {
+  id          String   @id @default(uuid())
+  receiptId   String
+  receipt     Receipt  @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  itemName    String   // Food item name (e.g., "Soup", "Pasta")
+  quantity    Float
+  unitPrice   Float?
+  totalPrice  Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inventoryDeductions InventoryDeduction[]
+
+  @@map("receipt_items")
+}
+
+model Ingredient {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  category    String?  // Vegetables, Meat, Dairy, etc.
+  unit        String   // Default unit (kg, g, l, ml, pcs)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inventory   Inventory?
+  recipeItems RecipeItem[]
+
+  @@map("ingredients")
+}
+
+model Inventory {
+  id            String   @id @default(uuid())
+  ingredientId  String   @unique
+  ingredient    Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  quantity      Float    @default(0)
+  unit          String
+  minThreshold  Float?   // Alert when below this
+  lastUpdated   DateTime @default(now()) @updatedAt
+
+  updates       InventoryUpdate[]
+  deductions    InventoryDeduction[]
+
+  @@map("inventory")
+}
+
+model InventoryUpdate {
+  id            String   @id @default(uuid())
+  inventoryId   String
+  inventory     Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  invoiceItemId String?
+  invoiceItem   InvoiceItem? @relation(fields: [invoiceItemId], references: [id], onDelete: SetNull)
+  quantity      Float
+  type          InventoryUpdateType
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@map("inventory_updates")
+}
+
+enum InventoryUpdateType {
+  ADD
+  ADJUST
+  MANUAL
+}
+
+model InventoryDeduction {
+  id            String   @id @default(uuid())
+  inventoryId   String
+  inventory     Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  receiptItemId String?
+  receiptItem   ReceiptItem? @relation(fields: [receiptItemId], references: [id], onDelete: SetNull)
+  quantity      Float
+  reason        String?  // e.g., "Soup recipe"
+  createdAt     DateTime @default(now())
+
+  @@map("inventory_deductions")
+}
+
+model Recipe {
+  id          String   @id @default(uuid())
+  name        String   // Food item name (e.g., "Soup", "Pasta")
+  description String?
+  servings    Int?     // Number of servings this recipe makes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       RecipeItem[]
+
+  @@map("recipes")
+}
+
+model RecipeItem {
+  id            String   @id @default(uuid())
+  recipeId      String
+  recipe        Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredientId  String
+  ingredient    Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  quantity      Float    // Quantity needed per serving
+  unit          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([recipeId, ingredientId])
+  @@map("recipe_items")
+}
+
