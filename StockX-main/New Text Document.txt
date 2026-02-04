@@ -1,0 +1,12 @@
+DATABASE_URL="postgresql://stockx_user:stockx_password@localhost:5433/stockx_db?schema=public"
+JWT_SECRET=dev-secret-key-change-in-production-12345
+JWT_EXPIRES_IN=7d
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=placeholder
+AWS_SECRET_ACCESS_KEY=placeholder
+AWS_S3_BUCKET=stockx-uploads
+OPENAI_API_KEY=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
+GOOGLE_AI_API_KEY=placeholder
+PORT=3000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5174
