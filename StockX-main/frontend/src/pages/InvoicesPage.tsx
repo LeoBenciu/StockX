@@ -57,9 +57,10 @@ export default function InvoicesPage() {
       } else {
         alert('Factură încărcată, dar nu au fost extrase articole. Verifică logurile backend-ului.');
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
       console.error('Error uploading invoice:', error);
-      alert('Eroare la încărcarea facturii: ' + (error.response?.data?.message || error.message));
+      alert('Eroare la încărcarea facturii: ' + (err.response?.data?.message || err.message || ''));
     } finally {
       setUploading(false);
     }

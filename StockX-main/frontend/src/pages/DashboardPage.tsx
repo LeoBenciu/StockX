@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { invoicesApi, receiptsApi, inventoryApi, dashboardApi } from '../services/api';
 import { Package, TrendingUp, AlertTriangle, FileText } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -56,9 +56,9 @@ export default function DashboardPage() {
 
       // Prepare chart data (top 10 items by quantity)
       const sortedInventory = inventory
-        .sort((a, b) => b.quantity - a.quantity)
+        .sort((a: { quantity: number }, b: { quantity: number }) => b.quantity - a.quantity)
         .slice(0, 10)
-        .map((item) => ({
+        .map((item: { quantity: number; ingredient: { name: string } }) => ({
           name: item.ingredient.name,
           quantity: item.quantity,
         }));
@@ -74,8 +74,6 @@ export default function DashboardPage() {
   if (loading) {
     return <div className="text-center py-12">Se încarcă...</div>;
   }
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { recipesApi, inventoryApi } from '../services/api';
-import { ChefHat, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 interface Ingredient {
   id: string;
@@ -234,7 +234,7 @@ export default function RecipesPage() {
                     />
 
                     <span className="w-10 text-sm text-gray-500">
-                      {ingredient?.baseUnit ?? 'g'}
+                      {ingredient?.baseunit ?? 'g'}
                     </span>
 
                     <button
@@ -286,7 +286,7 @@ export default function RecipesPage() {
                   <ul className="text-sm text-gray-600">
                     {recipe.items.map((i) => (
                       <li key={i.id}>
-                        {i.quantity} {i.ingredient.baseUnit} {i.ingredient.name}
+                        {i.quantity} {i.ingredient.baseunit} {i.ingredient.name}
                       </li>
                     ))}
                   </ul>
