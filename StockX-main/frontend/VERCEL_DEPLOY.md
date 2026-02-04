@@ -1,15 +1,49 @@
 # Deploy Frontend to Vercel
 
-## Fix 404 on routes
+## If you see "404: NOT_FOUND" (Vercel error page)
 
-The project has a `vercel.json` that rewrites all routes to `index.html` so the React app (client-side routing) works. Without it, visiting or refreshing `/login`, `/dashboard`, etc. returns 404.
+This usually means Vercel is not building or serving the frontend. Do this:
 
-## Project settings in Vercel
+### 1. Set Root Directory to `frontend`
 
-1. **Root Directory**: Set to `frontend` (this repo is a monorepo; the app is in the `frontend` folder).
-2. **Build Command**: `npm run build` (default)
-3. **Output Directory**: `dist` (Vite default)
-4. **Install Command**: `npm install` (default)
+The repo has **backend**, **frontend**, and **ai-agents** in one repo. Vercel must build only the frontend.
+
+- Vercel Dashboard → your project → **Settings** → **General**
+- Find **Root Directory** → click **Edit**
+- Enter: **`frontend`** (no leading slash)
+- Save
+
+### 2. Confirm build settings
+
+Under **Settings** → **General** → **Build & Development Settings**:
+
+| Setting            | Value           |
+|--------------------|-----------------|
+| Framework Preset   | Vite            |
+| Build Command      | `npm run build` |
+| Output Directory   | `dist`          |
+| Install Command    | `npm install`   |
+
+(These are also in `vercel.json`; the dashboard overrides if set.)
+
+### 3. Redeploy
+
+- **Deployments** → open the **⋯** on the latest deployment → **Redeploy**
+- Or push a new commit after changing Root Directory
+
+### 4. Check the build
+
+If 404 persists, open the latest deployment → **Building** tab and confirm:
+
+- Build runs from the `frontend` folder (paths in logs should be under `frontend/`).
+- Build finishes with "Build Completed" and no red errors.
+- If the build fails, fix the error (e.g. missing env, Node version) then redeploy.
+
+---
+
+## Fix 404 on app routes (/login, /dashboard, etc.)
+
+The project has a `vercel.json` that rewrites all routes to `index.html` so the React app (client-side routing) works. After the correct build is deployed, those routes will load the app instead of 404.
 
 ## Backend (API)
 
