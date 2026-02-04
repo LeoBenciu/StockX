@@ -1,6 +1,9 @@
 import axios from 'axios';
+import { log, logError } from '../utils/log';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+log('API client init', { baseURL: API_URL, hasViteApiUrl: !!import.meta.env.VITE_API_URL });
 
 const api = axios.create({
   baseURL: API_URL,
@@ -11,6 +14,7 @@ const api = axios.create({
 
 // Add token to requests
 api.interceptors.request.use((config) => {
+  log(`API ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -18,11 +22,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 errors (unauthorized)
+// Handle 401 errors (unauthorized) + log all API errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const url = error.config?.url ?? error.config?.baseURL;
+    const method = error.config?.method?.toUpperCase();
+    logError(`API error ${method} ${url}`, { status, message: error.message, data: error.response?.data });
+    if (status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
