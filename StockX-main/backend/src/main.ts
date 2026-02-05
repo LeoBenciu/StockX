@@ -13,15 +13,20 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  // Enable CORS
+  // Enable CORS – allow comma-separated FRONTEND_URL for multiple origins (e.g. Vercel + local)
+  const frontendUrls = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((u) => u.trim())
+    .filter(Boolean);
+  const origins = [
+    ...frontendUrls,
+    'http://localhost:5134',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:3000',
+  ].filter(Boolean);
   app.enableCors({
-    origin: [
-      process.env.FRONTEND_URL,
-      'http://localhost:5134',
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:3000',
-    ].filter(Boolean),
+    origin: origins.length > 0 ? origins : true,
     credentials: true,
   });
 
