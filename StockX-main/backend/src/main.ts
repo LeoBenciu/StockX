@@ -14,9 +14,10 @@ async function bootstrap() {
   });
 
   // Enable CORS – allow comma-separated FRONTEND_URL for multiple origins (e.g. Vercel + local)
+  // Strip trailing slashes – browser Origin header never includes trailing slash
   const frontendUrls = (process.env.FRONTEND_URL || '')
     .split(',')
-    .map((u) => u.trim())
+    .map((u) => u.trim().replace(/\/+$/, ''))
     .filter(Boolean);
   const origins = [
     ...frontendUrls,
@@ -52,6 +53,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
+  console.log(`CORS allowed origins:`, origins);
 }
 bootstrap();
 
