@@ -26,9 +26,17 @@ services:
       - key: FRONTEND_URL
         sync: false
 
+  - type: static
+    name: stockx-frontend
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
 databases:
   - name: stockx-db
     databaseName: stockx_db
     user: stockx_user
     plan: starter
-
